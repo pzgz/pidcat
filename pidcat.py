@@ -46,6 +46,7 @@ parser.add_argument('-t', '--tag', dest='tag', action='append', help='Filter out
 parser.add_argument('-i', '--ignore-tag', dest='ignored_tag', action='append', help='Filter output by ignoring specified tag(s)')
 parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__, help='Print the version number and exit')
 parser.add_argument('-a', '--all', dest='all', action='store_true', default=False, help='Print all log messages')
+parser.add_argument('-b', '--no-empty-break', dest='no_empty_line_break', action='store_true', default=False, help='Not break on empty line, useful for some devices such as HUAWEI')
 
 args = parser.parse_args()
 min_level = LOG_LEVELS_MAP[args.min_level.upper()]
@@ -249,7 +250,7 @@ def parse_start_proc(line):
     return line_package, '', line_pid, line_uid, ''
   return None
 
-def tag_in_tags_regex(tag, tags):  
+def tag_in_tags_regex(tag, tags):
   return any(re.match(r'^' + t + r'$', tag) for t in map(str.strip, tags))
 
 ps_command = base_adb_command + ['shell', 'ps']
@@ -275,7 +276,7 @@ while adb.poll() is None:
     line = adb.stdout.readline().decode('utf-8', 'replace').strip()
   except KeyboardInterrupt:
     break
-  if len(line) == 0:
+  if not args.no_empty_line_break and len(line) == 0:
     break
 
   bug_line = BUG_LINE.match(line)
